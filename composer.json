@@ -1,14 +1,14 @@
 {
-    "name"          : "wp-media/package-template",
-    "description"   : "WP Plugin template for WP Media.",
-    "type"          : "project",
-    "keywords"      : ["wordpress", "wp", "plugin"],
-    "homepage"      : "https://github.com/wp-media/package-template",
-    "license"       : "GPL-2.0+",
+
+
+    "name"          : "roymahfooz/above-the-fold",
+    "description"   : "Tracks and displays above-the-fold hyperlinks on the homepage.",
+    "type"          : "wordpress-plugin",    "keywords"      : ["wordpress", "wp", "plugin", "above the fold", "link tracker"],
+    "homepage"      : "https://github.com/roymahfooz/above-the-fold",    "license"       : "GPL-2.0+",
     "authors"       : [
         {
-            "name": "Mathieu Lamiot",
-            "email": "mathieu@wp-media.me"
+            "name": "Roy Mahfooz",
+            "email": "roy.mahfooz@example.com"
         }
     ],
     "require"       : {
@@ -25,10 +25,15 @@
 		"wp-coding-standards/wpcs": "dev-develop",
 		"wp-media/phpunit": "^3"
     },
-    "autoload": {},
+
+    "autoload": {
+        "psr-4": {
+            "ABOVE_THE_FOLD_LINK_TRACKER\\": "src/"
+        }
+    },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.0-dev"
+            "dev-master": "0.1.x-dev"
         }
     },
     "config":{

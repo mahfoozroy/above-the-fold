@@ -1,4 +1,13 @@
+
+
+
 <?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="AboveTheFoldLinkTracker" xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+	<description>Custom ruleset for the Above The Fold Link
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="AboveTheFoldLinkTracker" xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+	<description>Custom ruleset for the Above The Fold Link
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="AboveTheFoldLinkTracker" xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+	<description>Custom ruleset for the Above The Fold Link
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="WP Media" xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
 	<description>The custom ruleset for WP Media projects</description>
 
@@ -24,20 +33,20 @@
 	<config name="testVersion" value="5.6-"/>
 	<config name="minimum_supported_wp_version" value="4.9"/>
 
+
 	<rule ref="WordPress">
         <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase" />
-	</rule>
-    <rule ref="WordPress.WP.I18n">
+        <exclude name="WordPress.Files.FileName.InvalidClassFileName"/> <!-- If class names don't match file names exactly like Core.php for class Core -->
+	</rule>    <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array" value="rocket" />
+            <property name="text_domain" type="array" value="above-the-fold-link-tracker" />
         </properties>
     </rule>
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
-            <property name="prefixes" type="array" value="rocket,wp_rocket" />
+            <property name="prefixes" type="array" value="atf_lt,ABOVE_THE_FOLD_LINK_TRACKER" />
         </properties>
-    </rule>
-    <rule ref="WordPress.Files.FileName">
+    </rule>    <rule ref="WordPress.Files.FileName">
         <properties>
             <property name="strict_class_file_names" value="false" />
         </properties>
