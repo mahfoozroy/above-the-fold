@@ -48,7 +48,18 @@
         const screenHeight = window.screen.height;
 
 
+
         links.forEach(function(link) {
+            // Exclude links from the WP Admin Bar.
+            if (link.closest('#wpadminbar')) {
+                return;
+            }
+
+            // Exclude links from common error, warning, or notice containers.
+            if (link.closest('.notice, .error, .warning, .updated, .notice-error, .notice-warning, .notice-info, .notice-success')) {
+                return;
+            }
+
             const hrefAttr = link.getAttribute('href');            // Log the raw attribute and the resolved .href property
             // console.log('ATF Debug: Processing link. Attribute href:', hrefAttr, 'Resolved link.href:', link.href, 'Element:', link);
 
