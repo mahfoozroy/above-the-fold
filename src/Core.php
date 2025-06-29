@@ -49,11 +49,12 @@ final class Core {
 	 */
 	const DB_VERSION_OPTION_NAME = 'atf_lt_db_version';
 
+
 	/**
 	 * Current database version.
 	 *	 * @var string
 	 */
-	const CURRENT_DB_VERSION = '1.0';
+	const CURRENT_DB_VERSION = '1.1';
 
 	/**
 	 * Cron hook for cleaning old data.
@@ -134,8 +135,10 @@ final class Core {
 	private function init() {
 		$this->check_requirements();
 		$this->load_dependencies();
+
 		$this->setup_components();
 		$this->add_hooks();
+		$this->check_database_version(); // Check and apply DB updates if needed.
 		$this->load_textdomain();
 	}
 
@@ -171,6 +174,7 @@ final class Core {
 	/**
 	 * Display admin notice for WordPress version.
 	 */
+
 	public function wp_version_notice() {
 		$message = sprintf(
 			/* translators: 1: Plugin Name, 2: Required WP version, 3: Current WP version */
@@ -180,6 +184,18 @@ final class Core {
 			get_bloginfo( 'version' )
 		);
 		printf( '<div class="notice notice-error"><p>%s</p></div>', wp_kses_post( $message ) );
+	}
+
+	/**
+	 * Checks if the database is up to date and runs the installer if not.	 * This ensures that plugin updates with schema changes are applied.
+	 */
+	private function check_database_version() {
+		if ( get_option( self::DB_VERSION_OPTION_NAME ) !== self::CURRENT_DB_VERSION ) {
+			// Database schema is out of date, or it's a new install without the option set.
+			// Run the table creation/update logic.
+			Database::create_tables();
+			update_option( self::DB_VERSION_OPTION_NAME, self::CURRENT_DB_VERSION );
+		}
 	}
 
 

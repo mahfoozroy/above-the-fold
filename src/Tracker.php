@@ -121,10 +121,12 @@ class Tracker {
 		}
 
 
-		// Get User Agent.
-		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
-		$visit_id = $this->db->insert_visit_data( $screen_width, $screen_height, $user_agent );
+		// Get User Agent and parse it for the browser name.
+		$full_user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
+		$browser_name    = $this->parse_user_agent_for_browser_name( $full_user_agent );
+
+		$visit_id = $this->db->insert_visit_data( $screen_width, $screen_height, $browser_name );
 
 		if ( ! $visit_id ) {
 			wp_send_json_error( [ 'message' => __( 'Failed to save visit data to the database.', 'above-the-fold-link-tracker' ) ], 500 );
@@ -133,6 +135,7 @@ class Tracker {
 		$links_saved_count = 0;
 		foreach ( $links_data_raw as $link_item_raw ) {
 			if ( is_array( $link_item_raw ) && isset( $link_item_raw['url'] ) && isset( $link_item_raw['text'] ) ) {
+
 				// Sanitize URL and text. wp_unslash is important for data from $_POST.
 				$url  = esc_url_raw( wp_unslash( $link_item_raw['url'] ) );
 				$text = sanitize_textarea_field( wp_unslash( $link_item_raw['text'] ) );
@@ -145,7 +148,6 @@ class Tracker {
 				}
 			}
 		}
-
 		if ( $links_saved_count > 0 ) {
 			wp_send_json_success( [
 				'message' => sprintf(					/* translators: %d: number of links processed */
@@ -160,41 +162,29 @@ class Tracker {
 		}
 	}
 
-	/**	 * Get client IP address, trying various headers.
+	/**	
+	 * Parses a user agent string to extract a simple browser name.
 	 *
-	 * @return string Client IP address.
+	 * @param string $user_agent The full user agent string.
+	 * @return string The simple browser name (e.g., 'Chrome', 'Firefox') or 'Unknown'.
 	 */
-	private function get_client_ip() {
-		$ip_address = '';
-		// Check for standard headers first.
-		$headers_to_check = [
-			'HTTP_CLIENT_IP',			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_FORWARDED',
-			'HTTP_FORWARDED_FOR',
-			'HTTP_FORWARDED',
-			'REMOTE_ADDR', // Fallback
-		];
+	private function parse_user_agent_for_browser_name( $user_agent ) {
+		$browser = 'Unknown';
 
-		foreach ( $headers_to_check as $header ) {
-			if ( ! empty( $_SERVER[ $header ] ) ) {
-				// Sanitize the entire header string first.
-				$header_value = sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) );
-				// If HTTP_X_FORWARDED_FOR or similar, it might contain a list of IPs. Take the first one.
-				if ( strpos( $header_value, ',' ) !== false ) {
-					$ip_list    = explode( ',', $header_value );
-					$ip_address = trim( $ip_list[0] );
-				} else {
-					$ip_address = $header_value;
-				}
-				// If a valid-looking IP is found, break.
-				// Basic check if it's not a private or reserved IP if needed, but for logging, any IP is fine.
-				// A more robust IP validation could be filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
-				// For simplicity, we take the first non-empty sanitized value.
-				if ( ! empty( $ip_address ) ) {
-					break;
-				}
-			}
+		// The order of these checks is important (e.g., Chrome contains "Safari").
+		if ( preg_match( '/(Edge|Edg)\//i', $user_agent ) ) {
+			$browser = 'Edge';
+		} elseif ( preg_match( '/(Opera|OPR)\//i', $user_agent ) ) {
+			$browser = 'Opera';
+		} elseif ( preg_match( '/Chrome\//i', $user_agent ) ) {
+			$browser = 'Chrome';
+		} elseif ( preg_match( '/Firefox\//i', $user_agent ) ) {
+			$browser = 'Firefox';
+		} elseif ( preg_match( '/MSIE|Trident/i', $user_agent ) ) {			$browser = 'Internet Explorer';
+		} elseif ( preg_match( '/Safari\//i', $user_agent ) ) {
+			$browser = 'Safari';
 		}
-		return ! empty( $ip_address ) ? $ip_address : 'UNKNOWN';
-	}
+
+		return $browser;	
+    }
 }
