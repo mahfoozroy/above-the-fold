@@ -3,8 +3,9 @@ version: 2.1
 
 # Orbs are reusable packages of CircleCI configuration that simplify setup.
 # We'll use the official PHP orb for common tasks.
+
 orbs:
-  php: circleci/php:2.0.1
+  php: circleci/php@2.1.0
 
 jobs:
   # This job will run PHP Code Sniffer to check for coding standards violations.
@@ -27,6 +28,7 @@ jobs:
           name: "Run PHP Code Sniffer"
           command: "composer phpcs"
 
+
 # Workflows define the order in which jobs are run.
 workflows:
   version: 2
@@ -34,4 +36,3 @@ workflows:
     jobs:
       # This workflow will run the 'lint' job on every push.
       - lint
-      # This workflow will run the 'lint' job on every push.      - lint
