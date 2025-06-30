@@ -58,14 +58,14 @@ class Cron {
 		wp_clear_scheduled_hook( Core::CRON_HOOK );
 	}
 
+
 	/**
 	 * The actual task performed by the cron job: cleans up old data.
 	 */
 	public function cleanup_old_data_task() {
-		// Ensure Database class is available if this runs independently (it should be loaded by Core).
-		// require_once ATF_LT_PLUGIN_DIR . 'src/Database.php';
-		// $db_instance = new Database(); // Or access via Core instance if cron setup allows.
-		// For simplicity, assuming $this->db is correctly instantiated by Core.
-		$this->db->delete_old_data();
+		// First, clean up orphaned links whose parent visits no longer exist.
+		// This replaces the functionality of the ON DELETE CASCADE foreign key.
+		$this->db->delete_orphaned_links();		// Then, delete the old visits.
+		$this->db->delete_old_visits();
 	}
 }

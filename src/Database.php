@@ -61,11 +61,12 @@ class Database {
 			KEY visit_time_idx (visit_time)
 		) $charset_collate;";
 		// The dbDelta call for $sql_visits was missing in your provided file structure for create_tables.		// It was only calling dbDelta($sql_links). Ensuring $sql_visits is also processed by dbDelta.		dbDelta( $sql_visits );
+
 		$sql_links = "CREATE TABLE $links_table_name (
 			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 			visit_id BIGINT(20) UNSIGNED NOT NULL,
 			link_url VARCHAR(2083) NOT NULL,
-			link_text TEXT,
+			link_text TEXT DEFAULT NULL,
 			PRIMARY KEY  (id),
 			KEY visit_id_idx (visit_id),
 			CONSTRAINT fk_atf_lt_visit_id FOREIGN KEY (visit_id) REFERENCES {$visits_table_name}(id) ON DELETE CASCADE
@@ -139,9 +140,11 @@ class Database {
 				'link_url'  => $link_url,
 				'link_text' => $link_text, // Use pre-sanitized text
 			],
+
 			[
-				'%d', // visit_id.				'%s', // link_url.
-				'%s', // link_text.
+				'%d', // visit_id
+				'%s', // link_url
+				'%s', // link_text
 			]
 		);
 		return $result ? $wpdb->insert_id : false;
@@ -178,15 +181,15 @@ class Database {
 		return $results;
 	}
 
+
 	/**
-	 * Deletes data older than 7 days.
+	 * Deletes visit data older than 7 days.
 	 *
 	 * @return int|false Number of rows deleted from visits table, or false on error.
 	 */
-	public function delete_old_data() {
+	public function delete_old_visits() {
 		global $wpdb;
 		$visits_table = self::get_visits_table_name();
-		// Links table will be cleaned by ON DELETE CASCADE foreign key.
 
 		$seven_days_ago = gmdate( 'Y-m-d H:i:s', strtotime( '-7 days' ) );
 
@@ -194,10 +197,29 @@ class Database {
 		$result = $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$visits_table} WHERE visit_time < %s",
-				$seven_days_ago
-			)
+				$seven_days_ago			)
 		);
 		// phpcs:enable
 		return $result;
 	}
-}
+
+	/**
+	 * Deletes orphaned rows from the links table where the corresponding visit_id no longer exists.
+	 * This is a cleanup task that replaces the ON DELETE CASCADE foreign key functionality.
+	 *
+	 * @return int|false Number of rows deleted, or false on error.
+	 */
+	public function delete_orphaned_links() {
+		global $wpdb;
+		$visits_table = self::get_visits_table_name();
+		$links_table  = self::get_links_table_name();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$result = $wpdb->query(
+			"DELETE l FROM {$links_table} AS l
+			 LEFT JOIN {$visits_table} AS v ON l.visit_id = v.id
+			 WHERE v.id IS NULL"
+		);
+		// phpcs:enable
+		return $result;
+	}}

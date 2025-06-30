@@ -1,0 +1,33 @@
+version: 2.1
+
+# Orbs are reusable packages of CircleCI configuration that simplify setup.
+# We'll use the official PHP orb for common tasks.
+orbs:
+  php: circleci/php:2.0.1
+
+jobs:
+  # This job will run PHP Code Sniffer to check for coding standards violations.
+  lint:
+    # The executor defines the environment where the job runs.
+    # The PHP orb provides a default executor with PHP and Composer pre-installed.
+    executor: php/default
+    steps:
+      # Step 1: Check out the source code from the repository.
+      - checkout
+
+      # Step 2: Install Composer dependencies.
+      # This is a command from the PHP orb that runs `composer install`
+      # and automatically handles caching of vendor dependencies for faster builds.
+      - php/install-packages
+
+      # Step 3: Run the linter.
+      # This command executes the "phpcs" script defined in your composer.json.      - run:
+          name: "Run PHP Code Sniffer"
+          command: "composer phpcs"
+
+# Workflows define the order in which jobs are run.
+workflows:
+  version: 2
+  build_and_lint:
+    jobs:
+      # This workflow will run the 'lint' job on every push.      - lint
